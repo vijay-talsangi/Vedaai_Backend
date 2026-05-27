@@ -3,6 +3,18 @@ import * as assignmentService from '../services/assignment.service.js';
 import { logger } from '../utils/logger.js';
 import type { AssignmentData } from '../types/index.js';
 
+function getStringValue(value: unknown): string | undefined {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (Array.isArray(value) && typeof value[0] === 'string') {
+    return value[0];
+  }
+
+  return undefined;
+}
+
 export async function createAssignment(
   req: Request,
   res: Response,
@@ -60,7 +72,7 @@ export async function getAssignment(
   next: NextFunction
 ): Promise<void> {
   try {
-    const { id } = req.params;
+    const id = getStringValue(req.params.id);
 
     if (!id) {
       res.status(400).json({
@@ -88,9 +100,9 @@ export async function listAssignments(
   next: NextFunction
 ): Promise<void> {
   try {
-    const page = parseInt(req.query.page as string, 10) || 1;
-    const limit = parseInt(req.query.limit as string, 10) || 10;
-    const search = req.query.search as string | undefined;
+    const page = parseInt(getStringValue(req.query.page) ?? '', 10) || 1;
+    const limit = parseInt(getStringValue(req.query.limit) ?? '', 10) || 10;
+    const search = getStringValue(req.query.search);
 
     const result = await assignmentService.listAssignments(page, limit, search);
 
@@ -110,7 +122,7 @@ export async function deleteAssignment(
   next: NextFunction
 ): Promise<void> {
   try {
-    const { id } = req.params;
+    const id = getStringValue(req.params.id);
 
     if (!id) {
       res.status(400).json({

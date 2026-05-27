@@ -1,11 +1,15 @@
-import IORedis from 'ioredis';
+import { createRequire } from 'node:module';
 import { config } from './env.js';
 import { logger } from '../utils/logger.js';
 
-let redisInstance: IORedis | null = null;
+const require = createRequire(import.meta.url);
 
-export function createRedisConnection(): IORedis {
-  const redis = new IORedis(config.REDIS_URL, {
+const Redis = require('ioredis') as any;
+
+let redisInstance: any = null;
+
+export function createRedisConnection(): any {
+  const redis = new Redis(config.REDIS_URL, {
     maxRetriesPerRequest: null,
     enableReadyCheck: true,
     retryStrategy(times: number): number | null {
@@ -27,8 +31,9 @@ export function createRedisConnection(): IORedis {
     logger.info('Redis ready');
   });
 
-  redis.on('error', (err: Error) => {
-    logger.error(`Redis error: ${err.message}`);
+  redis.on('error', (err: unknown) => {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.error(`Redis error: ${message}`);
   });
 
   redis.on('close', () => {
@@ -38,7 +43,7 @@ export function createRedisConnection(): IORedis {
   return redis;
 }
 
-export function getRedis(): IORedis {
+export function getRedis(): any {
   if (!redisInstance) {
     redisInstance = createRedisConnection();
   }

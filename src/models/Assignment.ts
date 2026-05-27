@@ -103,9 +103,16 @@ const assignmentSchema = new Schema<IAssignment>(
     toJSON: {
       virtuals: true,
       transform: (_doc, ret) => {
-        ret.id = ret._id.toString();
-        delete ret.__v;
-        return ret;
+        const transformed = ret as Record<string, unknown> & {
+          _id: { toString(): string };
+          __v?: unknown;
+          id?: string;
+        };
+
+        transformed.id = transformed._id.toString();
+        const { __v, ...safeRet } = transformed;
+        void __v;
+        return safeRet;
       },
     },
   }

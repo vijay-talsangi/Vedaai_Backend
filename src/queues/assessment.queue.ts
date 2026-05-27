@@ -5,7 +5,9 @@ export interface AssessmentJobData {
   assignmentId: string;
 }
 
-export const assessmentQueue = new Queue<AssessmentJobData>('assessment-generation', {
+export const assessmentQueue = new Queue<AssessmentJobData, void, string>(
+  'assessment-generation',
+  {
   connection: getRedis(),
   defaultJobOptions: {
     attempts: 1,
@@ -14,4 +16,5 @@ export const assessmentQueue = new Queue<AssessmentJobData>('assessment-generati
       delay: 3000,
     },
   },
-});
+}
+);
